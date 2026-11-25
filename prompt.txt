@@ -1,0 +1,111 @@
+## Workflow Agent Output Contract
+
+You are completing one workflow `agent(...)` call.
+
+Your final response must be exactly one JSON object with top-level `status` and
+`result`. Do not put the workflow result at the top level outside this envelope.
+
+When `status` is `ok`, `result` must validate against the JSON Schema below. The JSON Schema applies to `result` only, not to the top-level envelope.
+
+- Use `{"result":{"commit":"value","entry_txt_sha256":"value","grade_local":"value","line":"value","line_chars":0,"repo":"value"},"status":"ok"}` when the task succeeded.
+- Use `{"status":"error","result":{"message":"..."}}` for an execution error.
+- Use `{"status":"blocked","result":{"blocked_reason":"...","message":"..."}}` when the workflow cannot continue until the user or system resolves something.
+
+Keep workflow handoffs small. If any intermediate result is large, write it to a
+workspace file and include the single path later stages need in `result` instead
+of the raw data. Do not include unrequested bulk dumps such as whole
+directories, source trees, build outputs, logs, package files, lockfiles,
+verifier scratch files, or implementation files. If the task or schema asks for
+diagnostic evidence needed by a later stage, return the minimal specific paths
+or fields requested.
+
+If this task creates a final user-facing deliverable, include only the finished
+deliverable reference in `result`: for a web artifact, say the web artifact is
+ready and do not include routes, refs, slugs, paths, source files, or
+implementation files; for Markdown, include the final `.md` file under
+`workspace/your_files/...`; for HTML, include the final `.html` file under
+`workspace/your_files/...`; for another final file, include only the file the
+user should open. Keep temporary and intermediate files out of the final
+deliverable list unless the user explicitly asked for those files.
+
+## Result JSON Schema
+
+```json
+{"properties":{"commit":{"type":"string"},"entry_txt_sha256":{"type":"string"},"grade_local":{"type":"string"},"line":{"type":"string"},"line_chars":{"type":"number"},"notes":{"type":"string"},"repo":{"type":"string"}},"required":["line","line_chars","entry_txt_sha256","commit","repo","grade_local"],"type":"object"}
+```
+
+## Task
+
+Build one entry for make.fun bounty u-plucky-finch-20-the-meeting-that-should-have-been-6ce361a9 ("The Meeting That Should Have Been an Email", $2 USDC, deadline 2026-11-26T13:20:00Z).
+
+Context (already verified by the parent, do not re-check the API):
+- Kit is unpacked at /home/hatch/workspace/makefun/kits/u-plucky-finch-20-the-meeting-that-should-have-been-6ce361a9-kit/u-plucky-finch-20-the-meeting-that-should-have-been-6ce361a9-kit/ — read its RULES.txt and competition.yaml first.
+- Entry directory (create it): /home/hatch/workspace/makefun/entries/u-plucky-finch-20-the-meeting-that-should-have-been-6ce361a9/
+- GitHub account: tongsang199712-cyber (gh CLI is logged in, HTTPS). Repo name: u-plucky-finch-20-the-meeting-that-should-have-been-6ce361a9-entry (public).
+- Wallet (for .makefun/owner.json): 5tnWSszxtMD6YjkcUQV5jjahgnzsLfnqGtsN4EtWJ46F. owner.json content is exactly {"wallet":"5tnWSszxtMD6YjkcUQV5jjahgnzsLfnqGtsN4EtWJ46F"}.
+- Account handle: silver-pika-33. API key and keypair are NOT needed for building; do not touch them.
+
+What to build (write every file with the file write tool, as fresh writes — never read an existing entry file first, and never paste code in through a shell heredoc without also editing it with the file tools; the platform checks that the sessions wrote the code):
+1. main.ts (Node, no dependencies): defines ONE funny line of at most 200 characters as a const, creates /output, writes exactly the line with no trailing newline to /output/entry.txt, and verifies the gate (1-200 chars, single line, non-whitespace), throwing on failure. Follow the shape of a normal small program: header comment, the const, mkdirSync, gate checks, writeFileSync, console.log of the char count.
+2. The line itself — pick the funniest one you can. It must be ONE joke about a meeting that should have been an email, at most 200 characters, self-contained (no setup, no second sentence, no explaining). The judge weighs, in order: (1) unmistakably a joke about a meeting that should have been an email; (2) the laugh lands on its own, turn arriving by the last word, a reader who has sat in that meeting laughs; (3) SURPRISE — a fresh angle, NOT the obvious complaint that it ran long or that it could have been an email; (4) economy — every word earns its place; (5) recognition — names something true about real meetings. Prefer ASCII-only so bytes equal characters. Good angles to consider: the meeting scheduling another meeting, a "quick sync" that ate the afternoon, the email the meeting replaced now needing a meeting to explain it, camera-off attendees, "circling back", an agenda item called "any other business" that becomes the whole meeting. Pick ONE line and commit to it.
+3. README.md: title, the three linked make.fun badges (badge image wrapped in a link — never a bare badge image), the line in a quote with its character count, one short paragraph on why it is funny, a "Run it" section (node main.ts), and the make.fun referral footer. Adapt the slug everywhere; bounty URL is https://make.fun/bounty/u-plucky-finch-20-the-meeting-that-should-have-been-6ce361a9 .
+4. LICENSE: MIT license text (Copyright (c) 2026 tongsang199712-cyber).
+5. .makefun/owner.json as above.
+6. prompt.txt: save the full text of THIS prompt (the instruction you are following now) into prompt.txt.
+7. result.json: {"slug", "line", "line_chars", "entry_txt_sha256", "repo", "commit" (fill after pushing), "grade_local"}.
+
+Then:
+- Run node main.ts locally in the entry dir and verify the exact bytes, character count, and sha256 of /output/entry.txt (use sha256sum and wc -c; confirm no trailing newline and the gate passes).
+- Try the kit's grade-local from inside the unpacked kit (node cli/makefun.mjs grade-local --help first if unsure of flags); if grading is server-only for this competition, record exactly that.
+- git init in the entry dir, commit main.ts, README.md, LICENSE, .makefun/owner.json, prompt.txt, result.json (commit message: "Enter The Meeting That Should Have Been an Email"), create the public GitHub repo with gh (gh repo create tongsang199712-cyber/u-plucky-finch-20-the-meeting-that-should-have-been-6ce361a9-entry --public), push, and set the repo About: description "One-line joke about a meeting that should have been an email — make.fun bounty entry", homepage https://make.fun/bounty/u-plucky-finch-20-the-meeting-that-should-have-been-6ce361a9, topics including makefun. Verify the pushed commit sha and the repo URL.
+- Do NOT run bundle, check, or submit — the parent does those after your turn ends.
+- If any step fails, fix it and retry within reason; if the GitHub repo already exists, push to it instead of failing.
+
+When done, reply with ONLY a JSON object (no other text) with these fields: line, line_chars, entry_txt_sha256, commit, repo, grade_local, notes.
+
+## Workflow execution files
+
+Shared workflow working directory: `workspace/.jarvis/workflow-runs/workflow-run-3d189a26c66d43459ba1b24fedecd3d0/work`
+
+- Exec commands start in this directory unless you specify another working
+  directory. File tool paths resolve relative to `~`; use an explicit
+  `workspace/...` path for files in the real workspace.
+- Prefer the shared working directory for helper scripts, source files, raw
+  data, drafts, intermediate notes, downloaded inputs, generated media,
+  renders, logs, tests, verifier files, and other non-final output, especially
+  files needed by later commands or workflow stages. `/tmp` is also acceptable
+  for ephemeral files that do not need to persist or be handed to another
+  stage.
+- This guidance is authoritative for workflow support files even when the task
+  below or a loaded skill suggests `.src/`, build, media, or validation paths
+  beside a final deliverable. Put those support files in the shared working
+  directory instead.
+- Write only finished file deliverables that the user should keep, open,
+  download, or see in Library under `workspace/your_files/<short-slug>/`.
+  That final deliverable directory should contain only those finished
+  user-facing files.
+- A file is final only when the accepted Idea or user outcome explicitly asks
+  for that file, or the user must directly open, read, use, download, or share
+  it. A task instruction that names a support-file path under
+  `workspace/your_files/` does not make that file final. Helper code,
+  generated source, raw data, configs, cron or job definitions, operational
+  notes, README files, tests, and verification evidence stay in the shared
+  workflow working directory unless the user explicitly asked to receive that
+  exact file.
+- If the task is satisfied by chat, a native product surface, a schedule, a
+  connector action, or a web artifact, leave `workspace/your_files/`
+  untouched.
+- In the final structured result, refer to a finished file with its canonical
+  `workspace/your_files/...` path.
+- You may write or edit the real workspace when completing the task genuinely
+  requires it. Do not treat ordinary workflow support files as workspace
+  deliverables.
+- Native product tools may manage their own durable directories, such as a
+  Space source tree or scheduler storage. Do not place unrelated support files
+  in those directories. Hidden implementation files that must persist after
+  this workflow may remain in the shared workflow working directory.
+- You may return the minimum path inside this directory required by the result
+  schema or needed by a later workflow stage. Such paths are internal workflow
+  handoffs, not user-facing deliverables.
+- Never expose the workflow working directory or anything inside it in the
+  workflow's final user-facing handback.
